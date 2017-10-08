@@ -1,0 +1,10 @@
+---
+
+- name: Install VirtualBox
+  homebrew_cask:
+    name: virtualbox
+  when: vagrant_install_virtualbox
+
+- name: Install Vagrant
+  homebrew_cask:
+    name: vagrant
