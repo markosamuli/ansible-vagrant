@@ -25,11 +25,13 @@
   when: ansible_architecture == "i386"
 
 - name: Install Vagrant (64bit)
+  become: yes
   apt:
     deb: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_x86_64.deb"
   when: ansible_architecture == "x86_64"
 
 - name: Install Vagrant (32bit)
+  become: yes
   apt:
     deb: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_i686.deb"
   when: ansible_architecture == "i386"
