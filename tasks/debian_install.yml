@@ -1,0 +1,37 @@
+---
+
+- name: Create Vagrant installation temp directory
+  file:
+    path: "{{ vagrant_tmp }}"
+    state: directory
+
+- name: Download Vagrant (64bit)
+  get_url:
+    url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_x86_64.deb"
+    dest: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_x86_64.deb"
+    checksum: "{{ vagrant_64bit_checksum }}"
+  when: ansible_architecture == "x86_64"
+
+- name: Download Vagrant (32bit)
+  get_url:
+    url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_i686.deb"
+    dest: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_i686.deb"
+    checksum: "{{ vagrant_32bit_checksum }}"
+  when: ansible_architecture == "i386"
+
+- name: Install Vagrant (64bit)
+  become: yes
+  apt:
+    deb: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_x86_64.deb"
+  when: ansible_architecture == "x86_64"
+
+- name: Install Vagrant (32bit)
+  become: yes
+  apt:
+    deb: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_i686.deb"
+  when: ansible_architecture == "i386"
+
+- name: Cleanup temp directory
+  file:
+    path: "{{ vagrant_tmp }}"
+    state: absent
