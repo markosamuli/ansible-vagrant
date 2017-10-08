@@ -2,7 +2,7 @@
 
 - name: Install Virtualbox
   package:
-    name: virtualboxt
+    name: virtualbox
     state: latest
   when: vagrant_install_virtualbox
 
