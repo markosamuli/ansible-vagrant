@@ -22,6 +22,7 @@ addons:
     - python-pip
     - python-dev
 
+before_install:
   # Update Homebrew before installation
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 
