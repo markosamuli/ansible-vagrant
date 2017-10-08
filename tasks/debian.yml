@@ -2,7 +2,8 @@
 
 - name: Install Virtualbox
   package:
-    name: virtualbox
+    name: virtualboxt
+    state: latest
   when: vagrant_install_virtualbox
 
 - name: Create Vagrant installation temp directory
