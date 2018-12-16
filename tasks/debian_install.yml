@@ -5,31 +5,20 @@
     path: "{{ vagrant_tmp }}"
     state: directory
 
-- name: Download Vagrant (64bit)
-  get_url:
-    url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_x86_64.deb"
-    dest: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_x86_64.deb"
-    checksum: "{{ vagrant_64bit_checksum }}"
-  when: ansible_architecture == "x86_64"
+- name: Set Vagrant package name
+  set_fact:
+    vagrant_package: vagrant_{{ vagrant_version }}_{{ vagrant_arch }}.deb
 
-- name: Download Vagrant (32bit)
+- name: Download Vagrant package
   get_url:
-    url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_i686.deb"
-    dest: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_i686.deb"
-    checksum: "{{ vagrant_32bit_checksum }}"
-  when: ansible_architecture == "i386"
+    url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/{{ vagrant_package }}"
+    dest: "{{ vagrant_tmp }}/{{ vagrant_package }}"
+    checksum: "{{ vagrant_checksum }}"
 
-- name: Install Vagrant (64bit)
+- name: Install Vagrant
   become: yes
   apt:
-    deb: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_x86_64.deb"
-  when: ansible_architecture == "x86_64"
-
-- name: Install Vagrant (32bit)
-  become: yes
-  apt:
-    deb: "{{ vagrant_tmp }}/vagrant_{{ vagrant_version }}_i686.deb"
-  when: ansible_architecture == "i386"
+    deb: "{{ vagrant_tmp }}/{{ vagrant_package }}"
 
 - name: Cleanup temp directory
   file:
