@@ -1,6 +1,0 @@
----
-
-vagrant_tmp: /tmp/install_vagrant
-vagrant_version: "2.0.0"
-vagrant_32bit_checksum: sha256:1f0b4eabe3df4a5c1ac20c36ced16b30ecf3a986e2e35093e980281a65a921a7
-vagrant_64bit_checksum: sha256:bd54383e8ca2f7d00e06c9afa8bf7221b26abfe89e9ae950c69de2ee97af8aa0

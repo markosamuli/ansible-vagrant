@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+###
+# Print error into STDERR
+###
+error() {
+    echo "$@" 1>&2
+}
+
+###
+# Get latest release for a GitHub repository
+###
+get_latest_release() {
+    local repository=$1
+    local url="https://api.github.com/repos/${repository}/releases/latest"
+    curl --silent "${url}" | \
+        grep '"tag_name":' | \
+        sed -E 's/.*"([^"]+)".*/\1/'
+}
+
+###
+# Get latest tag for a GitHub repository
+###
+get_latest_tag() {
+    local repository=$1
+    local url="https://api.github.com/repos/${repository}/tags"
+    curl --silent "${url}" | \
+        grep '"name":' | \
+        head -1 | \
+        sed -E 's/.*"([^"]+)".*/\1/'
+}
+
+###
+# Get checksum for the release debian installer
+###
+get_vagrant_deb_checksum() {
+    local arch=$1
+    local release=$2
+
+    local url="https://releases.hashicorp.com/vagrant/${release}"
+    url="${url}/vagrant_${release}_SHA256SUMS"
+    local file="vagrant_${release}_${arch}.deb"
+
+    curl --silent "${url}" | \
+        grep "${file}" | \
+        awk '{ print $1 }'
+}
+
+###
+# Update version
+###
+update_version() {
+    local os_family=$1
+    local arch=$2
+    local release=$3
+    local checksum=""
+    checksum=$(get_vagrant_deb_checksum ${arch} ${release})
+    [ -z "${checksum}" ] && {
+        error "Failed to get checksum for ${arch} ${release}"; return 1;
+    }
+    update_ansible_vars ${os_family} ${arch} ${release} ${checksum}
+}
+
+###
+# Update version and checksum variables
+###
+update_ansible_vars() {
+    local os_family=$1
+    local arch=$2
+    local version=$3
+    local checksum=$4
+
+    # Ansible vars file to update
+    if [ "${os_family}" == "debian" ]; then
+        local ansible_os_family="Debian"
+    fi
+    [ -z "${ansible_os_family}" ] && {
+        error "Unsupported OS family ${os_family}"; return 1;
+    }
+
+    if [ "${arch}" == "x86_64" ]; then
+        local ansible_arch="x86_64"
+    elif [ "${arch}" == "i686" ]; then
+        local ansible_arch="i386"
+    fi
+    [ -z "${ansible_arch}" ] && {
+        error "Unsupported architecture ${arch}"; return 1;
+    }
+    local vars_file=vars/${ansible_os_family}_${ansible_arch}.yml
+
+    # Update variables
+    echo "Updating variables in ${vars_file}"
+    sed -i.save -r "s/^(vagrant_version):.*$/\1: \"${version}\"/" \
+        ${vars_file}
+    sed -i.save -r "s/^(vagrant_checksum):.*$/\1: \"sha256:${checksum}\"/" \
+        ${vars_file}
+    rm ${vars_file}.save
+}
+
+###
+# Get latest Terraform version
+###
+latest_vagrant_version() {
+    local latest_tag=""
+    latest_tag=$(get_latest_tag hashicorp/vagrant)
+    [ -z "${latest_tag}" ] && {
+        error "Failed to get latest tag from GitHub"; return 1;
+    }
+    echo "${latest_tag}" | sed -E 's/^v(.*)/\1/'
+}
+
+set -e
+
+VAGRANT_VERSION=$(latest_vagrant_version)
+echo "Latest Terraform release is ${VAGRANT_VERSION}"
+
+update_version debian i686 ${VAGRANT_VERSION}
+update_version debian x86_64 ${VAGRANT_VERSION}

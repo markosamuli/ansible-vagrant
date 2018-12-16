@@ -1,0 +1,6 @@
+---
+
+vagrant_tmp: /tmp/install_vagrant
+vagrant_version: "2.2.2"
+vagrant_arch: "i686"
+vagrant_checksum: "sha256:185c20d02d512a32ef246ada6bbb7b595719df2f5749d163dcbac0908ccbda5c"
