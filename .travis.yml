@@ -9,18 +9,19 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      env: ANSIBLE_VERSION=2.2.3.0
+      env: ANSIBLE_VERSION=2.2.3.0 INSTALL_VIRTUALBOX=True
     - os: linux
       dist: trusty
       sudo: required
-      env: ANSIBLE_VERSION=2.4.0.0
+      env: ANSIBLE_VERSION=2.4.0.0 INSTALL_VIRTUALBOX=True
     # Ubuntu 16.04 LTS
     - os: linux
       dist: xenial
       sudo: required
-      env: ANSIBLE_VERSION=2.7.4.0
+      env: ANSIBLE_VERSION=2.7.4.0 INSTALL_VIRTUALBOX=True
     # OS X 10.13 (High Sierra) with Xcode 9.4
     - os: osx
+      env: INSTALL_VIRTUALBOX=False
 
 # Install Ansible and Python development packages
 addons:
@@ -58,10 +59,12 @@ script:
   # Test role run
   - >
     ansible-playbook tests/test.yml -i tests/inventory --connection=local
+    -e "{'vagrant_install_virtualbox':'${INSTALL_VIRTUALBOX}'}"
 
   # Test idempotence
   - >
     ansible-playbook tests/test.yml -i tests/inventory --connection=local
+    -e "{'vagrant_install_virtualbox':'${INSTALL_VIRTUALBOX}'}"
     | grep -q 'changed=0.*failed=0'
     && (echo 'Idempotence test: pass' && exit 0)
     || (echo 'Idempotence test: fail' && exit 1)
